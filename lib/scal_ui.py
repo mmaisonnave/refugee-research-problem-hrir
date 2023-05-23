@@ -88,7 +88,7 @@ class SCAL_UI(object):
 
             
         def invoke_callback(button=None):
-            callback_fn(self.session_name_widget.value, self.topic_description_widget.value)
+            callback_fn(self.session_name_widget.value.strip(), self.topic_description_widget.value.strip())
 
         self.main_button.on_click(invoke_callback)
         self.session_name_widget.observe(observe_session_name_widget)

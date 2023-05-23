@@ -70,14 +70,14 @@ class SCALRefugees(object):
                 self.item_representation = pickle.load(reader)
 
             self.topic_vector = topic_vector
-            self.item_representation[topic_description]=topic_vector
+            self.topic_description = topic_description.strip()
+            self.item_representation[self.topic_description]=topic_vector
             self.B=1
             self.target_recall=target_recall
             self.initial_label_size=len(labeled_collection)
             self.n=batch_size_cap
             self.N=len(unlabeled_collection)
             self.weak_oracle=weak_oracle
-            self.topic_description = topic_description
 
             self.labeled_collection = labeled_collection
             self.unlabeled_collection = unlabeled_collection
