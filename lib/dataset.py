@@ -21,6 +21,7 @@ _refugee_keyword_data_sources = ['/home/ec2-user/SageMaker/data/refugees_in_cana
 
 class DatasetRefugees(object):
     data_sources = [data_source for data_source in os.listdir('/home/ec2-user/SageMaker/data/') if 'GM_refugee' in data_source]
+    _repository_path = open('../config/repository_path.txt', 'r').read()
     
     def _all_files():
         return [os.path.join(data_source, file) for data_source in _data_sources for file in os.listdir(data_source)]
@@ -52,6 +53,15 @@ class DatasetRefugees(object):
         sample= refugee_ids + list(rng.choice((unlabeled_ids), size=N-len(refugee_ids), replace=False))
         return [DataItemRefugees(id_) for id_ in sample]
     
+    def get_initial_labeled_items():
+        collection=[]
+        df = pd.read_csv(os.path.join(DatasetRefugees._repository_path, 'data', 'initial_labeled_data.csv'))
+        for id_, label in zip(df['id'], df['label']):
+            assert label==DataItemRefugees.RELEVANT_LABEL or label==DataItemRefugees.IRRELEVANT_LABEL
+            item = DataItemRefugees(str(id_))
+            item.assign_label(label)
+            collection.append(item)
+        return collection
     def get_weak_oracle():
         oracle = {}
         refugee_ids = set(map(lambda file: re.findall('/([0-9]*).xml', file)[0], DatasetRefugees._files_with_refugee_keywords()))
@@ -180,8 +190,8 @@ class DataItemRefugees(object):
         return f'https://proquest.com/docview/{self.id_}'
     
     def _highlight(text, keywords):
-        assert all([len(DataItemRefugees.nlp(keyword))==1 for keyword in keywords])
-        keywords = [DataItemRefugees.nlp(keyword)[0].lemma_ for keyword in keywords if not DataItemRefugees.nlp(keyword)[0].lemma_ in stop_words.STOP_WORDS]
+        keywords = [token.lemma_ for keyword in keywords for token in DataItemRefugees.nlp(keyword)  if not token.lemma_ in stop_words.STOP_WORDS and token.lemma_.isalnum()]
+#         assert all([len(DataItemRefugees.nlp(keyword))==1 for keyword in keywords])
         pairs=[]
         for matchobject in re.finditer(('|'.join(keywords)).lower(), text.lower()):
             pairs.append((matchobject.start(),matchobject.end()))
@@ -194,7 +204,7 @@ class DataItemRefugees(object):
             after = text[end:]
             text = previous +'<mark style="background-color:rgb(235,133,133)">'+ word +'</mark>'+ after
         return text
-    def get_htmldocview(self, highlighter=None,confidence_score=None, keywords = None):
+    def get_htmldocview(self, highlighter=None, keywords = None):
         title, text = tdmstudio.get_title(self.get_filename()), tdmstudio.get_text(self.get_filename()) 
         url = self._get_url()
         date = tdmstudio.get_date(self.get_filename())
@@ -205,8 +215,7 @@ class DataItemRefugees(object):
                 f'<u>TITLE</u>: &emsp;&emsp;{title}<br>'\
                 f'<u>DATE</u>: &emsp;&emsp;{date}<br>'\
                 f'<u>URL</u>:&emsp;&emsp;&emsp;{url}<br>'\
-                f'<u>ID</u>: &emsp;&emsp;{self.id_}<br>'\
-                f'<u>CONFIDENCE SCORE</u>: &emsp;&emsp;{confidence_score:4.3f}<hr>'\
+                f'<u>ID</u>: &emsp;&emsp;{self.id_}<hr>'\
                 f'{text}<hr style=\"border-color:black\"></html>'
     
     def get_filename(self, ):

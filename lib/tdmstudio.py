@@ -27,9 +27,9 @@ def get_title(filename):
     str_=''
     if not title is None:
         str_+=f'{title}.'
-
-    return BeautifulSoup(str_, parser='html.parser', features="lxml").get_text().replace('>','').replace('<','')
-
+    
+#     return BeautifulSoup(str_, parser='html.parser', features="lxml").get_text().replace('>','').replace('<','')
+    return str_
 def get_date(filename):
     tree = etree.parse(filename)
     root = tree.getroot()

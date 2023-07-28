@@ -255,9 +255,9 @@ class SCALRefugees(object):
         # -------- #
         # Training #
         # -------- #
-        
         assert len(extension)+len(self.labeled_collection)==\
-                                len(set([item.id_ for item in list(extension)+self.labeled_collection]))
+                                len(set([item.id_ for item in list(extension)+self.labeled_collection])), f'len(extension)={len(extension)} - len(labeled)={len(self.labeled_collection)} -'\
+                                f'len(union)={(len(set([item.id_ for item in list(extension)+self.labeled_collection])))}'
         
         logging.debug(f'Using labeled collection for trainin size={len(self.labeled_collection)} ({_show_item_list(self.labeled_collection)}])')
         
@@ -277,11 +277,11 @@ class SCALRefugees(object):
         logging.debug(f'Randomly selected {len(self.random_sample_from_batch)} for annotation '\
                       f'({_show_item_list(self.random_sample_from_batch, show_all=True)})  ')
         
-        yhat = self.models[-1].predict(self.random_sample_from_batch, item_representation=self.item_representation)
-        logging.debug(f'predictions made (yhat.shape={yhat.shape}) yhat= {yhat}')
+#         yhat = self.models[-1].predict(self.random_sample_from_batch, item_representation=self.item_representation)
+#         logging.debug(f'predictions made (yhat.shape={yhat.shape}) yhat= {yhat}')
         
-        text_for_label = [suggestion.get_htmldocview(highlighter=None, confidence_score=confidence, keywords=self.topic_description.split(' '))
-                        for suggestion,confidence in zip(self.random_sample_from_batch,yhat)]
+        text_for_label = [suggestion.get_htmldocview(highlighter=None, keywords=self.topic_description.split(' '))
+                        for suggestion in self.random_sample_from_batch]
                 
         client_current_index = len(self.all_texts)+1
             
