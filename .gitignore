@@ -4,3 +4,4 @@
 embeddings/
 sessions/scal/*
 config/*
+**/.DS_Store
